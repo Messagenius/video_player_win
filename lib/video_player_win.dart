@@ -262,6 +262,9 @@ class WinVideoPlayerController extends ValueNotifier<WinVideoPlayerValue> {
 
   Future<void> seekTo(Duration time) async {
     if (!value.isInitialized) throw ArgumentError("video file not opened yet");
+    // Already ended on the last frame: a native seek would restart playback
+    // (issue#44 fix) and loop between first and last frames.
+    if (value.isCompleted && time >= value.duration) return;
 
     await VideoPlayerWinPlatform.instance
         .seekTo(textureId_, time.inMilliseconds);
